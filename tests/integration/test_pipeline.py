@@ -7,7 +7,7 @@ import pytest
 
 from traffic_analytics.config import load_config
 from traffic_analytics.models import BoundingBox, Detection, TrackObservation
-from traffic_analytics.pipeline import PipelineMode, PipelineState, process_frame
+from traffic_analytics.pipeline import PipelineMode, PipelineState, _safe_output_fps, process_frame
 
 ROOT = Path(__file__).parents[2]
 
@@ -116,3 +116,20 @@ def test_pipeline_rejects_invalid_frame_shape() -> None:
             adapter=FakeAdapter(),
             state=PipelineState(),
         )
+
+
+@pytest.mark.parametrize(
+    ("reported_fps", "expected_fps"),
+    [
+        (24.0, 24.0),
+        (240.0, 240.0),
+        (0.0, 30.0),
+        (-1.0, 30.0),
+        (1_000.0, 30.0),
+        (float("nan"), 30.0),
+    ],
+)
+def test_pipeline_uses_safe_fallback_for_implausible_source_fps(
+    reported_fps: float, expected_fps: float
+) -> None:
+    assert _safe_output_fps(reported_fps) == expected_fps

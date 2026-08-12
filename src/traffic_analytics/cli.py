@@ -9,7 +9,11 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from traffic_analytics.config import load_config
-from traffic_analytics.evaluation import evaluate_events, load_events_csv
+from traffic_analytics.evaluation import (
+    evaluate_events,
+    load_events_csv,
+    load_ground_truth_events_csv,
+)
 from traffic_analytics.pipeline import PipelineMode, run_video, validate_video_source
 from traffic_analytics.ultralytics_adapter import UltralyticsAdapter
 
@@ -49,7 +53,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "evaluate":
             report = evaluate_events(
                 load_events_csv(args.predictions),
-                load_events_csv(args.ground_truth),
+                load_ground_truth_events_csv(args.ground_truth),
                 frame_tolerance=args.frame_tolerance,
             )
             print(json.dumps(report.to_dict(), indent=2))
