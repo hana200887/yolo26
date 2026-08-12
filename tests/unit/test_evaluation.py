@@ -108,3 +108,25 @@ def test_ground_truth_loader_rejects_invalid_event_id(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="row 2"):
         load_ground_truth_events_csv(annotations)
+
+
+def test_ground_truth_loader_rejects_duplicate_event_ids(tmp_path: Path) -> None:
+    annotations = tmp_path / "ground-truth.csv"
+    annotations.write_text(
+        "event_id,frame_index,class_name,direction\n1,42,bus,OUT\n01,53,car,IN\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="duplicate event_id.*row 3"):
+        load_ground_truth_events_csv(annotations)
+
+
+def test_ground_truth_loader_rejects_class_outside_annotation_taxonomy(tmp_path: Path) -> None:
+    annotations = tmp_path / "ground-truth.csv"
+    annotations.write_text(
+        "event_id,frame_index,class_name,direction\n1,42,buss,OUT\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="class_name.*row 2"):
+        load_ground_truth_events_csv(annotations)
