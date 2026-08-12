@@ -90,8 +90,7 @@ def test_event_csv_loader_validates_schema_and_rows(tmp_path: Path) -> None:
 def test_ground_truth_loader_uses_human_annotation_schema(tmp_path: Path) -> None:
     annotations = tmp_path / "ground-truth.csv"
     annotations.write_text(
-        "event_id,frame_index,class_name,direction\n"
-        "7,42,bus,OUT\n",
+        "event_id,frame_index,class_name,direction\n7,42,bus,OUT\n",
         encoding="utf-8",
     )
 
@@ -103,8 +102,7 @@ def test_ground_truth_loader_uses_human_annotation_schema(tmp_path: Path) -> Non
 def test_ground_truth_loader_rejects_invalid_event_id(tmp_path: Path) -> None:
     annotations = tmp_path / "ground-truth.csv"
     annotations.write_text(
-        "event_id,frame_index,class_name,direction\n"
-        "0,42,bus,OUT\n",
+        "event_id,frame_index,class_name,direction\n0,42,bus,OUT\n",
         encoding="utf-8",
     )
 
