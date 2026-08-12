@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from traffic_analytics.cli import build_parser
+from traffic_analytics.cli import build_parser, main
 
 
 @pytest.mark.parametrize("command", ["detect", "track", "analyze"])
@@ -23,6 +23,36 @@ def test_evaluate_command_requires_both_event_files() -> None:
 
     assert args.predictions == Path("pred.csv")
     assert args.ground_truth == Path("truth.csv")
+
+
+def test_evaluate_command_accepts_tracker_independent_ground_truth(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    predictions = tmp_path / "predictions.csv"
+    predictions.write_text(
+        "frame_index,track_id,class_name,direction\n"
+        "42,19,bus,OUT\n",
+        encoding="utf-8",
+    )
+    ground_truth = tmp_path / "ground-truth.csv"
+    ground_truth.write_text(
+        "event_id,frame_index,class_name,direction\n"
+        "4,42,bus,OUT\n",
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "evaluate",
+            "--predictions",
+            str(predictions),
+            "--ground-truth",
+            str(ground_truth),
+        ]
+    )
+
+    assert exit_code == 0
+    assert '"true_positives": 1' in capsys.readouterr().out
 
 
 def test_parser_rejects_unknown_mode() -> None:
