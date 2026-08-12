@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 README_PATH = PROJECT_ROOT / "README.md"
@@ -81,3 +81,10 @@ def test_ci_runs_reproducible_non_model_quality_gates() -> None:
     assert "mypy src" in workflow
     assert 'pytest -m "not model"' in workflow
     assert "pip-audit" in workflow
+
+
+def test_ci_pins_external_actions_to_full_commit_shas() -> None:
+    workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+    action_references = re.findall(r"^\s*- uses: [^@\s]+@([0-9a-f]{40})", workflow, re.MULTILINE)
+
+    assert len(action_references) == 3
