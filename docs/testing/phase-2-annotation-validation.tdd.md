@@ -16,9 +16,9 @@ findings on the ground-truth CSV boundary.
 
 | Behavior | RED evidence | GREEN evidence | Checkpoints | Guarantee |
 | --- | --- | --- | --- | --- |
-| Duplicate ground-truth IDs | `uv run --frozen pytest tests/unit/test_evaluation.py -q` â†’ **2 failed, 8 passed**; duplicate numeric IDs `1` and `01` were accepted | Same command â†’ **10 passed**; loader and CLI integration tests â†’ **18 passed** | `e945167`, pending fix commit | Parsed ground-truth `event_id` values must be unique, including equivalent integer spellings. |
-| Published vehicle taxonomy | Same RED command â†’ `buss` was accepted | Same GREEN command â†’ **10 passed**; loader and CLI integration tests â†’ **18 passed** | `e945167`, pending fix commit | Ground truth accepts only `bicycle`, `car`, `motorcycle`, `bus`, and `truck`. |
-| Unambiguous schema and canonical taxonomy | `uv run --frozen pytest tests/unit/test_evaluation.py -q` â†’ **2 failed, 10 passed**; duplicate headers and a second hard-coded class set remained | `uv run --frozen pytest tests/unit/test_evaluation.py tests/unit/test_config.py tests/unit/test_cli.py -q` â†’ **29 passed** | pending fix commit | The header must exactly equal the four published fields, and evaluation reuses the one vehicle taxonomy from configuration. |
+| Duplicate ground-truth IDs | `uv run --frozen pytest tests/unit/test_evaluation.py -q` â†’ **2 failed, 8 passed**; duplicate numeric IDs `1` and `01` were accepted | Same command â†’ **10 passed**; loader and CLI integration tests â†’ **18 passed** | `e945167`, `bc20693` | Parsed ground-truth `event_id` values must be unique, including equivalent integer spellings. |
+| Published vehicle taxonomy | Same RED command â†’ `buss` was accepted | Same GREEN command â†’ **10 passed**; loader and CLI integration tests â†’ **18 passed** | `e945167`, `bc20693` | Ground truth accepts only `bicycle`, `car`, `motorcycle`, `bus`, and `truck`. |
+| Unambiguous schema and canonical taxonomy | `uv run --frozen pytest tests/unit/test_evaluation.py -q` â†’ **2 failed, 10 passed**; duplicate headers and a second hard-coded class set remained | `uv run --frozen pytest tests/unit/test_evaluation.py tests/unit/test_config.py tests/unit/test_cli.py -q` â†’ **29 passed** | `78ae1b7`, `bc20693` | The header must exactly equal the four published fields, and evaluation reuses the one vehicle taxonomy from configuration. |
 
 ## Final verification
 
@@ -35,9 +35,9 @@ Results:
 - Ruff format: **28 files already formatted**.
 - Ruff lint: **All checks passed**.
 - Strict mypy: **Success: no issues found in 11 source files**.
-- Earlier full-suite results are superseded by the final rerun after the two
-  P1 review fixes. The skipped test remains the deliberately opt-in real-model
-  smoke test.
+- Tests: **89 passed, 1 skipped**; branch-aware coverage **85.54%** (minimum
+  80%). The skipped test remains the deliberately opt-in real-model smoke
+  test.
 - Dependency audit: **No known vulnerabilities found**. The editable local
   package is skipped because it is not published on PyPI.
 
