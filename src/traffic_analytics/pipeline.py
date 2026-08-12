@@ -7,6 +7,7 @@ import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
+from math import isfinite
 from pathlib import Path
 from time import perf_counter
 from typing import Protocol, cast
@@ -34,6 +35,8 @@ from traffic_analytics.visualization import render_frame
 Frame = NDArray[np.uint8]
 SUPPORTED_VIDEO_SUFFIXES = frozenset({".avi", ".m4v", ".mkv", ".mov", ".mp4", ".webm"})
 OUTPUT_ARTIFACT_SUFFIXES = (".mp4", ".events.csv", ".summary.json")
+DEFAULT_OUTPUT_FPS = 30.0
+MAX_REASONABLE_OUTPUT_FPS = 240.0
 
 
 class PipelineMode(StrEnum):
@@ -228,6 +231,14 @@ def _video_fourcc(code: str) -> int:
     return builder(*code)
 
 
+def _safe_output_fps(reported_fps: float) -> float:
+    """Return a portable output FPS when container metadata is implausible."""
+
+    if isfinite(reported_fps) and 1.0 <= reported_fps <= MAX_REASONABLE_OUTPUT_FPS:
+        return reported_fps
+    return DEFAULT_OUTPUT_FPS
+
+
 def _temporary_output_path(output_base: Path, suffix: str) -> Path:
     """Create a same-directory temporary path so the final rename is atomic."""
 
@@ -286,8 +297,7 @@ def run_video(
     frame_index = 0
     started = perf_counter()
     try:
-        source_fps = float(capture.get(cv2.CAP_PROP_FPS))
-        source_fps = source_fps if source_fps > 0.0 else 30.0
+        source_fps = _safe_output_fps(float(capture.get(cv2.CAP_PROP_FPS)))
         output_base = (
             _unique_output_base(config.video.output_dir, source_path, mode)
             if config.video.save_output
