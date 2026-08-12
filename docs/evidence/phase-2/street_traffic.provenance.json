@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "asset_id": "wikimedia-street-traffic-2011",
+  "title": "Street traffic.webm",
+  "description": "Street traffic in San Francisco",
+  "source_page": "https://commons.wikimedia.org/wiki/File:Street_traffic.webm",
+  "original_file": "https://upload.wikimedia.org/wikipedia/commons/7/70/Street_traffic.webm",
+  "original_source": "https://www.youtube.com/watch?v=_7sCYyxw4Ic",
+  "author_attribution": "Editor (https://www.youtube.com/user/Editor)",
+  "license": {
+    "identifier": "CC-BY-3.0",
+    "url": "https://creativecommons.org/licenses/by/3.0/",
+    "requirements": [
+      "Credit the author and title.",
+      "Link the license.",
+      "Indicate that the project creates derived annotated review media."
+    ]
+  },
+  "downloaded_at": "2026-08-12",
+  "local_path": "data/videos/street_traffic.webm",
+  "tracked_in_git": false,
+  "bytes": 26490572,
+  "sha256": "e5facb24baf755f0c1193999d823e99f6032661ad2bdef5cc28cc1cbbfde03e2",
+  "source_sha1_reported_by_commons": "7f916030f14d84a65aa92077339f472897915fef",
+  "video": {
+    "container": "webm",
+    "video_codec": "vp8",
+    "width": 1920,
+    "height": 1080,
+    "duration_seconds": 35.004,
+    "decoded_frame_count": 1050,
+    "nominal_frame_rate": "30/1"
+  },
+  "known_metadata_issue": "OpenCV reported CAP_PROP_FPS=1000 for this WebM. The pipeline now falls back to 30 FPS for implausible values above 240; the first output was re-encoded from the same annotated frame sequence at 30 FPS for visual review only."
+}

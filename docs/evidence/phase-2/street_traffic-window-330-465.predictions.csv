@@ -1,0 +1,6 @@
+frame_index,track_id,class_name,direction
+357,144,bus,IN
+432,111,bus,OUT
+434,177,truck,OUT
+449,111,bus,IN
+449,177,truck,IN
