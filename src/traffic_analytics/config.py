@@ -9,7 +9,8 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 MAX_CONFIG_BYTES = 1_000_000
-SUPPORTED_CLASSES = frozenset({"person", "bicycle", "car", "motorcycle", "bus", "truck"})
+VEHICLE_CLASSES = frozenset({"bicycle", "bus", "car", "motorcycle", "truck"})
+SUPPORTED_CLASSES = VEHICLE_CLASSES | {"person"}
 NormalizedCoordinate = Annotated[float, Field(ge=0.0, le=1.0)]
 Probability = Annotated[float, Field(ge=0.0, le=1.0)]
 

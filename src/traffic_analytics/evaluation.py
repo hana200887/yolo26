@@ -7,11 +7,13 @@ from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from traffic_analytics.config import VEHICLE_CLASSES
 from traffic_analytics.models import CountEvent, CrossingDirection
 
 MAX_EVENT_FILE_BYTES = 10_000_000
 EVENT_FIELDS = ("frame_index", "track_id", "class_name", "direction")
 GROUND_TRUTH_EVENT_FIELDS = ("event_id", "frame_index", "class_name", "direction")
+GROUND_TRUTH_CLASS_NAMES = VEHICLE_CLASSES
 EventKind = tuple[str, CrossingDirection]
 
 
@@ -126,8 +128,8 @@ def _load_event_rows(
     try:
         with event_path.open("r", encoding="utf-8", newline="") as stream:
             reader = csv.DictReader(stream)
-            if reader.fieldnames is None or not set(fields).issubset(reader.fieldnames):
-                raise ValueError(f"{format_name} must contain: {', '.join(fields)}")
+            if reader.fieldnames != list(fields):
+                raise ValueError(f"{format_name} must contain exactly: {', '.join(fields)}")
             for row_number, row in enumerate(reader, start=2):
                 try:
                     events.append(
@@ -159,9 +161,25 @@ def load_events_csv(path: Path) -> tuple[CountEvent, ...]:
 def load_ground_truth_events_csv(path: Path) -> tuple[CountEvent, ...]:
     """Read manual event labels that use a human-assigned ID, not a tracker ID."""
 
-    return _load_event_rows(
+    events = _load_event_rows(
         path,
         fields=GROUND_TRUTH_EVENT_FIELDS,
         identifier_field="event_id",
         format_name="ground-truth CSV",
     )
+    _validate_ground_truth_events(events)
+    return events
+
+
+def _validate_ground_truth_events(events: Sequence[CountEvent]) -> None:
+    """Reject ambiguous or out-of-taxonomy manual labels before evaluation."""
+
+    seen_event_ids: set[int] = set()
+    for row_number, event in enumerate(events, start=2):
+        if event.track_id in seen_event_ids:
+            raise ValueError(f"duplicate event_id in ground-truth CSV row {row_number}")
+        seen_event_ids.add(event.track_id)
+        if event.class_name not in GROUND_TRUTH_CLASS_NAMES:
+            raise ValueError(
+                f"invalid class_name in ground-truth CSV row {row_number}: {event.class_name!r}"
+            )

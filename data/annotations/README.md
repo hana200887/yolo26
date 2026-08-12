@@ -17,7 +17,7 @@ event_id,frame_index,class_name,direction
   is not a ByteTrack ID.
 - `frame_index`: zero-based frame at which the bottom-centre anchor first has
   crossed the configured line.
-- `class_name`: one of the configured vehicle classes: `bicycle`, `car`,
+- `class_name`: one of the canonical vehicle classes: `bicycle`, `car`,
   `motorcycle`, `bus`, or `truck`.
 - `direction`: `IN` for negative-to-positive line-side movement and `OUT` for
   positive-to-negative movement. With the default horizontal line, `IN` means
