@@ -4,7 +4,9 @@ from pathlib import Path
 
 import pytest
 
+from traffic_analytics import config
 from traffic_analytics.evaluation import (
+    GROUND_TRUTH_CLASS_NAMES,
     evaluate_events,
     load_events_csv,
     load_ground_truth_events_csv,
@@ -117,7 +119,7 @@ def test_ground_truth_loader_rejects_duplicate_event_ids(tmp_path: Path) -> None
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="duplicate event_id.*row 3"):
+    with pytest.raises(ValueError, match=r"duplicate event_id.*row 3"):
         load_ground_truth_events_csv(annotations)
 
 
@@ -128,5 +130,21 @@ def test_ground_truth_loader_rejects_class_outside_annotation_taxonomy(tmp_path:
         encoding="utf-8",
     )
 
-    with pytest.raises(ValueError, match="class_name.*row 2"):
+    with pytest.raises(ValueError, match=r"class_name.*row 2"):
         load_ground_truth_events_csv(annotations)
+
+
+def test_ground_truth_loader_rejects_ambiguous_or_extended_headers(tmp_path: Path) -> None:
+    for header in (
+        "event_id,event_id,frame_index,class_name,direction",
+        "event_id,frame_index,class_name,direction,reviewer_note",
+    ):
+        annotations = tmp_path / "ground-truth.csv"
+        annotations.write_text(f"{header}\n1,42,bus,OUT,ignored\n", encoding="utf-8")
+
+        with pytest.raises(ValueError, match="must contain exactly"):
+            load_ground_truth_events_csv(annotations)
+
+
+def test_ground_truth_taxonomy_reuses_canonical_vehicle_classes() -> None:
+    assert GROUND_TRUTH_CLASS_NAMES is getattr(config, "VEHICLE_CLASSES", None)
