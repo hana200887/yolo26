@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections import Counter
 from collections.abc import Sequence
 
 import cv2
@@ -10,7 +9,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 from traffic_analytics.config import AppConfig
-from traffic_analytics.models import CountEvent, Detection, Point, TrackedObject
+from traffic_analytics.counting import EventStatistic
+from traffic_analytics.models import Detection, Point, TrackedObject
 
 Frame = NDArray[np.uint8]
 CLASS_COLORS: dict[str, tuple[int, int, int]] = {
@@ -50,7 +50,7 @@ def render_frame(
     *,
     detections: Sequence[Detection],
     tracks: Sequence[TrackedObject],
-    all_events: Sequence[CountEvent],
+    event_statistics: Sequence[EventStatistic],
     config: AppConfig,
     fps: float | None = None,
 ) -> Frame:
@@ -106,12 +106,13 @@ def render_frame(
         )
 
     if options.show_statistics:
-        counts = Counter((event.direction.value, event.class_name) for event in all_events)
-        totals = Counter(event.direction.value for event in all_events)
+        totals = {"IN": 0, "OUT": 0}
+        for direction, _, count in event_statistics:
+            totals[direction.value] += count
         lines = [f"IN {totals['IN']}  OUT {totals['OUT']}"]
         lines.extend(
             f"{direction} {class_name}: {count}"
-            for (direction, class_name), count in sorted(counts.items())
+            for direction, class_name, count in event_statistics
         )
         for index, text in enumerate(lines):
             cv2.putText(

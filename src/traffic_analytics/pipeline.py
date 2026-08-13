@@ -176,7 +176,7 @@ def process_frame(
         frame,
         detections=detections,
         tracks=tracks,
-        all_events=next_state.counter.events,
+        event_statistics=next_state.counter.statistics,
         config=config,
         fps=fps,
     )
@@ -202,7 +202,10 @@ def _unique_output_base(output_dir: Path, source: Path, mode: PipelineMode) -> P
     stem = f"{source.stem}-{mode.value}"
     candidate = output_dir / stem
     suffix = 1
-    while any(_artifact_path(candidate, artifact_suffix).exists() for artifact_suffix in OUTPUT_ARTIFACT_SUFFIXES):
+    while any(
+        _artifact_path(candidate, artifact_suffix).exists()
+        for artifact_suffix in OUTPUT_ARTIFACT_SUFFIXES
+    ):
         candidate = output_dir / f"{stem}-{suffix}"
         suffix += 1
     return candidate
@@ -230,7 +233,10 @@ def _reserve_output_base(output_dir: Path, source: Path, mode: PipelineMode) -> 
         except FileExistsError:
             suffix += 1
             continue
-        if any(_artifact_path(output_base, artifact_suffix).exists() for artifact_suffix in OUTPUT_ARTIFACT_SUFFIXES):
+        if any(
+            _artifact_path(output_base, artifact_suffix).exists()
+            for artifact_suffix in OUTPUT_ARTIFACT_SUFFIXES
+        ):
             _remove_artifact(reservation)
             suffix += 1
             continue
@@ -291,8 +297,17 @@ def _publish_artifact(temporary_path: Path, final_path: Path) -> None:
     try:
         os.link(temporary_path, final_path)
     except FileExistsError as exc:
-        raise FileExistsError(f"refusing to overwrite existing output: {final_path}")
-    temporary_path.unlink()
+        raise FileExistsError(f"refusing to overwrite existing output: {final_path}") from exc
+    try:
+        temporary_path.unlink()
+    except OSError:
+        try:
+            final_path.unlink()
+        except OSError as cleanup_error:
+            raise RuntimeError(
+                f"could not clean partially published output: {final_path}"
+            ) from cleanup_error
+        raise
 
 
 def run_video(
@@ -332,13 +347,12 @@ def run_video(
     started = perf_counter()
     try:
         source_fps = _safe_output_fps(float(capture.get(cv2.CAP_PROP_FPS)))
-        output_base = (
-            _reserve_output_base(config.video.output_dir, source_path, mode)
-            if config.video.save_output
-            else None
-        )
+        output_base: Path | None = None
+        if config.video.save_output:
+            output_base, reservation_path = _reserve_output_base(
+                config.video.output_dir, source_path, mode
+            )
         if output_base is not None:
-            output_base, reservation_path = output_base
             video_path = _artifact_path(output_base, ".mp4")
             events_path = _artifact_path(output_base, ".events.csv")
             summary_path = _artifact_path(output_base, ".summary.json")

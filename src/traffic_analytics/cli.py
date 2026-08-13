@@ -6,9 +6,10 @@ import argparse
 import json
 import sys
 from collections.abc import Sequence
+from importlib.resources import files
 from pathlib import Path
 
-from traffic_analytics.config import load_config
+from traffic_analytics.config import AppConfig, load_config
 from traffic_analytics.evaluation import (
     evaluate_events,
     load_events_csv,
@@ -17,7 +18,20 @@ from traffic_analytics.evaluation import (
 from traffic_analytics.pipeline import PipelineMode, run_video, validate_video_source
 from traffic_analytics.ultralytics_adapter import UltralyticsAdapter
 
-DEFAULT_CONFIG = Path("configs/default.yaml")
+DEFAULT_CONFIG = Path(str(files("traffic_analytics").joinpath("resources/default.yaml")))
+
+
+def _load_cli_config(path: Path) -> AppConfig:
+    """Load a config and keep packaged defaults independent of site-packages."""
+
+    config = load_config(path)
+    if path != DEFAULT_CONFIG:
+        return config
+    return config.model_copy(
+        update={
+            "video": config.video.model_copy(update={"output_dir": Path.cwd() / "data" / "outputs"})
+        }
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -60,7 +74,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
 
         source = validate_video_source(args.source)
-        config = load_config(args.config)
+        config = _load_cli_config(args.config)
         adapter = UltralyticsAdapter(config.model, config.tracking)
         summary = run_video(
             source,

@@ -118,7 +118,9 @@ class CountingConfig(FrozenConfig):
             raise ValueError("counted_classes must be non-empty and unique")
         unknown = set(values) - VEHICLE_CLASSES
         if unknown:
-            raise ValueError(f"counted_classes must contain only vehicle classes: {sorted(unknown)}")
+            raise ValueError(
+                f"counted_classes must contain only vehicle classes: {sorted(unknown)}"
+            )
         return values
 
     @model_validator(mode="after")

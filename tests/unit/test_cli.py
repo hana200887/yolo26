@@ -19,6 +19,18 @@ def test_video_commands_share_the_small_public_interface(command: str) -> None:
     assert args.preview is False
 
 
+def test_default_config_is_a_packaged_resource() -> None:
+    assert cli.DEFAULT_CONFIG.is_file()
+    assert cli.DEFAULT_CONFIG.parent.name == "resources"
+
+
+def test_packaged_default_config_outputs_to_the_current_working_directory() -> None:
+    config = cli._load_cli_config(cli.DEFAULT_CONFIG)
+
+    assert config.video.output_dir == Path.cwd() / "data" / "outputs"
+    assert config.tracking.tracker_config == cli.DEFAULT_CONFIG.parent / "bytetrack.yaml"
+
+
 def test_evaluate_command_requires_both_event_files() -> None:
     args = build_parser().parse_args(
         ["evaluate", "--predictions", "pred.csv", "--ground-truth", "truth.csv"]
@@ -122,7 +134,18 @@ def test_video_command_dispatches_all_user_arguments(
     monkeypatch.setattr(cli, "UltralyticsAdapter", lambda model, tracking: object())
     monkeypatch.setattr(cli, "run_video", fake_run_video)
 
-    exit_code = main([command, "--source", str(source), "--no-preview", "--max-frames", "7"])
+    exit_code = main(
+        [
+            command,
+            "--source",
+            str(source),
+            "--config",
+            "config.yaml",
+            "--no-preview",
+            "--max-frames",
+            "7",
+        ]
+    )
 
     assert exit_code == 0
     assert calls["source"] == source
@@ -147,7 +170,7 @@ def test_video_command_reports_output_io_errors(
     monkeypatch.setattr(cli, "UltralyticsAdapter", lambda model, tracking: object())
     monkeypatch.setattr(cli, "run_video", fail_run_video)
 
-    exit_code = main(["analyze", "--source", "traffic.mp4"])
+    exit_code = main(["analyze", "--source", "traffic.mp4", "--config", "config.yaml"])
 
     assert exit_code == 2
     assert "disk full" in capsys.readouterr().err

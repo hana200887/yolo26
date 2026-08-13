@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from traffic_analytics.geometry import line_side, normalize_point, segments_intersect
 from traffic_analytics.models import CountEvent, CrossingDirection, Point, TrackedObject
 
+EventStatistic = tuple[CrossingDirection, str, int]
+
 
 @dataclass(frozen=True, slots=True)
 class TrackCrossingState:
@@ -34,13 +36,22 @@ class CounterState:
     track_states: tuple[TrackCrossingState, ...] = ()
     counted: frozenset[tuple[int, CrossingDirection]] = frozenset()
     events: tuple[CountEvent, ...] = ()
+    statistics: tuple[EventStatistic, ...] = ()
 
     def __post_init__(self) -> None:
-        if not isinstance(self.track_states, tuple) or not isinstance(self.events, tuple):
+        if not all(
+            isinstance(collection, tuple)
+            for collection in (self.track_states, self.events, self.statistics)
+        ):
             raise TypeError("counter collections must be immutable tuples")
         track_ids = tuple(item.track_id for item in self.track_states)
         if len(track_ids) != len(set(track_ids)):
             raise ValueError("counter state contains duplicate track IDs")
+        statistic_keys = tuple(
+            (direction, class_name) for direction, class_name, _ in self.statistics
+        )
+        if len(statistic_keys) != len(set(statistic_keys)):
+            raise ValueError("counter state contains duplicate statistics")
 
 
 def _crossing_direction(
@@ -139,9 +150,28 @@ def update_counter(
             frame_index,
         )
 
+    statistics = state.statistics
+    if new_events:
+        statistic_counts = {
+            (direction, class_name): count for direction, class_name, count in state.statistics
+        }
+        for event in new_events:
+            key = (event.direction, event.class_name)
+            statistic_counts[key] = statistic_counts.get(key, 0) + 1
+        statistics = tuple(
+            sorted(
+                (
+                    (direction, class_name, count)
+                    for (direction, class_name), count in statistic_counts.items()
+                ),
+                key=lambda item: (item[0].value, item[1]),
+            )
+        )
+
     next_state = CounterState(
         track_states=tuple(sorted(next_states.values(), key=lambda item: item.track_id)),
         counted=counted,
         events=state.events if not new_events else (*state.events, *new_events),
+        statistics=statistics,
     )
     return next_state, tuple(new_events)

@@ -14,6 +14,7 @@ RUN_MODEL_TESTS = os.environ.get("RUN_MODEL_TESTS") == "1"
 
 pytestmark = [
     pytest.mark.model,
+    pytest.mark.enable_socket,
     pytest.mark.skipif(not RUN_MODEL_TESTS, reason="set RUN_MODEL_TESTS=1 for real weights"),
 ]
 

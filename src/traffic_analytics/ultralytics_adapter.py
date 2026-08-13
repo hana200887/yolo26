@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import os
 from collections.abc import Callable, Mapping, Sequence
 from math import isfinite
+from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Any, Protocol, cast
 
 import numpy as np
@@ -13,6 +18,10 @@ from traffic_analytics.config import ModelConfig, TrackingConfig
 from traffic_analytics.models import BoundingBox, Detection, TrackObservation
 
 Frame = NDArray[np.uint8]
+
+OFFICIAL_MODEL_SHA256 = {
+    "yolo26n.pt": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+}
 
 
 class AdapterError(RuntimeError):
@@ -32,10 +41,60 @@ class ModelLike(Protocol):
 ModelFactory = Callable[[str], ModelLike]
 
 
-def _default_model_factory(weights: str) -> ModelLike:
-    from ultralytics import YOLO  # type: ignore[attr-defined]
+def _configure_secure_checkpoint_loading() -> None:
+    """Require the restricted deserialization modes supported by this runtime."""
 
-    return cast(ModelLike, YOLO(weights))
+    os.environ["ULTRALYTICS_SAFE_LOAD"] = "1"
+    os.environ["TORCH_FORCE_WEIGHTS_ONLY_LOAD"] = "1"
+
+
+def _verified_model_path(weights: str) -> Path:
+    """Copy an approved checkpoint into a verified snapshot for safe loading."""
+
+    expected_digest = OFFICIAL_MODEL_SHA256.get(weights)
+    if expected_digest is None:
+        raise AdapterError(f"unsupported model checkpoint alias: {weights}")
+
+    model_path = Path(weights).resolve(strict=False)
+    if not model_path.is_file():
+        raise AdapterError(
+            f"missing local model checkpoint: {weights}; provision the verified official file first"
+        )
+    snapshot_path: Path | None = None
+    try:
+        with (
+            model_path.open("rb") as checkpoint,
+            NamedTemporaryFile(
+                mode="wb", prefix="traffic-analytics-verified-", suffix=".pt", delete=False
+            ) as snapshot,
+        ):
+            snapshot_path = Path(snapshot.name)
+            digest = hashlib.sha256()
+            while chunk := checkpoint.read(1024 * 1024):
+                digest.update(chunk)
+                snapshot.write(chunk)
+        actual_digest = digest.hexdigest()
+    except OSError as exc:
+        if snapshot_path is not None:
+            snapshot_path.unlink(missing_ok=True)
+        raise AdapterError(f"could not create verified checkpoint snapshot: {weights}") from exc
+    if not hmac.compare_digest(actual_digest, expected_digest):
+        snapshot_path.unlink(missing_ok=True)
+        raise AdapterError(
+            "model checkpoint checksum does not match the official yolo26n.pt release"
+        )
+    return snapshot_path
+
+
+def _default_model_factory(weights: str) -> ModelLike:
+    model_path = _verified_model_path(weights)
+    try:
+        _configure_secure_checkpoint_loading()
+        from ultralytics import YOLO  # type: ignore[attr-defined]
+
+        return cast(ModelLike, YOLO(str(model_path)))
+    finally:
+        model_path.unlink(missing_ok=True)
 
 
 def _as_array(value: object, field_name: str) -> NDArray[np.generic]:

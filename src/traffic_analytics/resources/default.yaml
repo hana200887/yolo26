@@ -1,0 +1,49 @@
+model:
+  weights: yolo26n.pt
+  device: auto
+  inference_confidence: 0.10
+  display_confidence: 0.40
+  end2end: true
+  image_size: 640
+  tracked_classes:
+    - person
+    - bicycle
+    - car
+    - motorcycle
+    - bus
+    - truck
+
+tracking:
+  tracker_config: bytetrack.yaml
+  trajectory_length: 30
+  direction_window: 5
+  minimum_displacement: 0.005
+
+counting:
+  counted_classes:
+    - bicycle
+    - car
+    - motorcycle
+    - bus
+    - truck
+  line:
+    start: [0.10, 0.60]
+    end: [0.90, 0.60]
+  deadband: 0.01
+  minimum_track_age: 3
+  negative_to_positive: IN
+  positive_to_negative: OUT
+
+video:
+  show_preview: false
+  save_output: true
+  output_dir: ../data/outputs
+  max_frames: null
+
+visualization:
+  show_detections: true
+  show_track_ids: true
+  show_trajectories: true
+  show_counting_line: true
+  show_statistics: true
+  show_fps: true

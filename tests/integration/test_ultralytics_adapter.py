@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, ClassVar
@@ -7,9 +9,15 @@ from typing import Any, ClassVar
 import numpy as np
 import pytest
 
+import traffic_analytics.ultralytics_adapter as ultralytics_adapter
 from traffic_analytics.config import load_config
-from traffic_analytics.models import Detection, TrackObservation
-from traffic_analytics.ultralytics_adapter import AdapterError, UltralyticsAdapter
+from traffic_analytics.models import BoundingBox, TrackObservation
+from traffic_analytics.ultralytics_adapter import (
+    AdapterError,
+    UltralyticsAdapter,
+    _configure_secure_checkpoint_loading,
+    _verified_model_path,
+)
 
 ROOT = Path(__file__).parents[2]
 
@@ -96,7 +104,7 @@ def test_detect_maps_allowed_classes_and_keeps_low_confidence_boxes() -> None:
     assert detections[0].class_id == 2
     assert detections[0].class_name == "car"
     assert detections[0].confidence == pytest.approx(0.15)
-    assert detections[0].bbox == Detection(2, "car", 0.15, detections[0].bbox).bbox
+    assert detections[0].bbox == BoundingBox(10.0, 20.0, 30.0, 40.0)
     assert model.predict_calls[0]["conf"] == pytest.approx(0.10)
     assert model.predict_calls[0]["classes"] == [0, 1, 2, 3, 5, 7]
     assert model.predict_calls[0]["device"] is None
@@ -201,3 +209,48 @@ def test_model_factory_receives_only_the_trusted_official_alias() -> None:
 
     assert received == ["yolo26n.pt"]
     assert adapter.detect(np.zeros((10, 10, 3), dtype=np.uint8)) == ()
+
+
+def test_default_model_loader_rejects_a_tampered_official_alias(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "yolo26n.pt").write_bytes(b"not an official checkpoint")
+
+    with pytest.raises(AdapterError, match="checksum"):
+        _verified_model_path("yolo26n.pt")
+
+
+def test_verified_checkpoint_is_a_snapshot_that_resists_path_swaps(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "yolo26n.pt"
+    approved_contents = b"approved checkpoint"
+    source.write_bytes(approved_contents)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setitem(
+        ultralytics_adapter.OFFICIAL_MODEL_SHA256,
+        "yolo26n.pt",
+        hashlib.sha256(approved_contents).hexdigest(),
+    )
+
+    snapshot = _verified_model_path("yolo26n.pt")
+    try:
+        source.write_bytes(b"swapped checkpoint")
+
+        assert snapshot != source
+        assert snapshot.read_bytes() == approved_contents
+    finally:
+        snapshot.unlink(missing_ok=True)
+
+
+def test_default_model_loader_forces_restricted_checkpoint_loading(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("ULTRALYTICS_SAFE_LOAD", raising=False)
+    monkeypatch.delenv("TORCH_FORCE_WEIGHTS_ONLY_LOAD", raising=False)
+
+    _configure_secure_checkpoint_loading()
+
+    assert os.environ["ULTRALYTICS_SAFE_LOAD"] == "1"
+    assert os.environ["TORCH_FORCE_WEIGHTS_ONLY_LOAD"] == "1"

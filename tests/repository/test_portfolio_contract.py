@@ -81,10 +81,19 @@ def test_ci_runs_reproducible_non_model_quality_gates() -> None:
     assert "mypy src" in workflow
     assert 'pytest -m "not model"' in workflow
     assert "pip-audit" in workflow
+    assert "uv build --wheel --no-build-isolation" in workflow
 
 
 def test_ci_pins_external_actions_to_full_commit_shas() -> None:
     workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
-    action_references = re.findall(r"^\s*- uses: [^@\s]+@([0-9a-f]{40})", workflow, re.MULTILINE)
+    action_references = re.findall(r"^\s*-\s+uses:\s*([^\s]+)", workflow, re.MULTILINE)
 
-    assert len(action_references) == 3
+    assert action_references
+    assert all(re.fullmatch(r"[^@\s]+@[0-9a-f]{40}", reference) for reference in action_references)
+
+
+def test_ci_drops_checkout_credentials_and_audits_on_a_schedule() -> None:
+    workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+
+    assert "persist-credentials: false" in workflow
+    assert "schedule:" in workflow

@@ -88,6 +88,10 @@ def test_same_track_and_direction_is_counted_only_once() -> None:
         CrossingDirection.IN,
         CrossingDirection.OUT,
     ]
+    assert state.statistics == (
+        (CrossingDirection.IN, "car", 1),
+        (CrossingDirection.OUT, "car", 1),
+    )
 
 
 def test_person_and_young_track_do_not_arm_or_count() -> None:
