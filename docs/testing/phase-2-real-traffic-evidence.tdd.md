@@ -1,35 +1,35 @@
-# Phase 2 real-traffic evidence — TDD record
+# Bằng chứng giao thông thật Phase 2 — ghi nhận TDD
 
-## Scope and user journeys
+## Phạm vi và user journey
 
-No external plan file was used. The Phase 2 work was derived from the agreed
-goal of producing a small but credible GitHub portfolio project with evidence
-from a real, licensed traffic clip.
+Không dùng file kế hoạch bên ngoài. Công việc Phase 2 được rút ra từ mục tiêu
+đã thống nhất: tạo GitHub portfolio nhỏ nhưng đáng tin với evidence từ traffic
+clip thật có license.
 
-- As an evaluator, I need manual labels to use a stable reviewer event ID rather
-  than a model-owned ByteTrack ID, so labels remain valid when a tracker is
-  changed or rerun.
-- As a video reviewer, I need output media to reject implausible FPS metadata,
-  so a WebM source cannot produce an unusably accelerated review video.
-- As a repository visitor, I need source license, checksums, annotation scope,
-  exact commands, and honest limitations, so the result can be inspected
-  without committing raw media or model weights.
+- Là một evaluator, tôi cần manual label dùng reviewer event ID ổn định thay
+  vì ByteTrack ID do model sở hữu, để label vẫn hợp lệ khi tracker đổi hoặc
+  chạy lại.
+- Là một video reviewer, tôi cần output media từ chối FPS metadata vô lý, để
+  WebM source không thể tạo review video bị tăng tốc không dùng được.
+- Là một repository visitor, tôi cần source license, checksum, annotation
+  scope, lệnh chính xác và limitation trung thực, để kết quả có thể kiểm tra
+  mà không phải commit raw media hay model weights.
 
-## RED → GREEN checkpoints
+## Checkpoint RED → GREEN
 
-| Behavior | RED evidence | GREEN evidence | Checkpoints | Guarantee |
+| Hành vi | Bằng chứng RED | Bằng chứng GREEN | Checkpoint | Cam kết |
 | --- | --- | --- | --- | --- |
-| Tracker-independent annotations | `uv run --frozen pytest tests/unit/test_evaluation.py -q` → collection error: missing `load_ground_truth_events_csv` | `uv run --frozen pytest tests/unit/test_evaluation.py tests/unit/test_cli.py -q` → **14 passed** | `1704ce3`, `e1ffc85`, `0255465` | The public evaluator accepts `event_id,frame_index,class_name,direction`; malformed IDs are rejected; prediction CSV continues to require `track_id`. |
-| Implausible video FPS | `uv run --frozen pytest tests/integration/test_pipeline.py -q` → collection error: missing `_safe_output_fps` | Same command after implementation → **10 passed** | `789134a`, `1de3fd6` | A finite source FPS in [1, 240] is preserved; zero, negative, NaN, and 1,000 FPS use the 30 FPS fallback. |
+| Annotation độc lập tracker | `uv run --frozen pytest tests/unit/test_evaluation.py -q` → collection error: thiếu `load_ground_truth_events_csv` | `uv run --frozen pytest tests/unit/test_evaluation.py tests/unit/test_cli.py -q` → **14 passed** | `1704ce3`, `e1ffc85`, `0255465` | Public evaluator nhận `event_id,frame_index,class_name,direction`; ID lỗi bị từ chối; prediction CSV tiếp tục yêu cầu `track_id`. |
+| FPS video vô lý | `uv run --frozen pytest tests/integration/test_pipeline.py -q` → collection error: thiếu `_safe_output_fps` | Cùng lệnh sau implementation → **10 passed** | `789134a`, `1de3fd6` | Source FPS hữu hạn trong [1, 240] được giữ lại; 0, âm, NaN và 1,000 FPS dùng fallback 30 FPS. |
 
-## Real-data execution evidence
+## Bằng chứng chạy với dữ liệu thật
 
-- Source: `Street traffic.webm`, San Francisco, CC BY 3.0; raw video is local
-  and checksummed. See
+- Source: `Street traffic.webm`, San Francisco, CC BY 3.0; raw video local và
+  có checksum. Xem
   [`../evidence/phase-2/street_traffic.provenance.json`](../evidence/phase-2/street_traffic.provenance.json).
-- Full local CPU run: 1,050 frames in 79.7015 s (**13.17 FPS**), yielding 7
-  predicted crossing events.
-- Reproducible provisional slice evaluation:
+- Full local CPU run: 1,050 frame trong 79.7015 s (**13.17 FPS**), tạo 7
+  predicted crossing event.
+- Đánh giá lát cắt tạm thời có thể chạy lại:
 
   ```powershell
   uv run --frozen traffic-analytics evaluate `
@@ -38,10 +38,10 @@ from a real, licensed traffic clip.
     --frame-tolerance 5
   ```
 
-  Result: 5 predictions, 1 provisional AI-assisted annotation, 1 TP, 4 FP,
-  F1 0.33333333333333337. This is not a general accuracy claim.
+  Kết quả: 5 prediction, 1 annotation tạm thời có hỗ trợ AI, 1 TP, 4 FP,
+  F1 0.33333333333333337. Đây không phải general accuracy claim.
 
-## Final verification
+## Xác minh cuối
 
 ```powershell
 uv run --frozen ruff format --check .
@@ -51,23 +51,23 @@ uv run --frozen pytest --cov=traffic_analytics --cov-report=term-missing -q
 uv run --frozen pip-audit
 ```
 
-Final results:
+Kết quả cuối:
 
 - Ruff format: **27 files already formatted**.
 - Ruff lint: **All checks passed**.
 - Strict mypy: **Success: no issues found in 11 source files**.
-- Tests: **83 passed, 1 skipped**; branch-aware coverage **85.07%** (minimum
-  80%). The skipped test is the deliberately opt-in real-model smoke test.
-- Dependency audit initially found `PYSEC-2026-1845` in `pytest 8.4.2`.
-  `pytest` was constrained to `>=9.0.3,<10`, resolved to 9.1.1, and the final
-  audit reported **No known vulnerabilities found**. The editable local package
-  is naturally skipped because it is not published on PyPI.
+- Tests: **83 passed, 1 skipped**; branch-aware coverage **85.07%** (tối thiểu
+  80%). Test skipped là real-model smoke test opt-in có chủ ý.
+- Dependency audit ban đầu tìm thấy `PYSEC-2026-1845` trong `pytest 8.4.2`.
+  `pytest` được ràng buộc `>=9.0.3,<10`, resolve thành 9.1.1, và audit cuối
+  báo cáo **No known vulnerabilities found**. Editable local package được bỏ
+  qua vì không phát hành trên PyPI.
 
-## Known gaps
+## Khoảng trống đã biết
 
-- The annotation is AI-assisted and only covers a continuous 4.53-second
-  window. It requires independent human review before reporting accuracy.
-- The benchmark is CPU-only and single-scene. It does not demonstrate
-  real-time GPU deployment or multi-camera generalization.
-- Full artifacts, raw media, and weights remain local by design; their hashes,
-  source URL, and regeneration commands are committed instead.
+- Annotation có hỗ trợ AI và chỉ phủ cửa sổ liên tục 4.53 giây. Cần review độc
+  lập của con người trước khi báo cáo accuracy.
+- Benchmark chỉ CPU và một scene. Nó không chứng minh real-time GPU deployment
+  hay multi-camera generalization.
+- Full artifact, raw media và weights giữ local theo thiết kế; hash, source URL
+  và lệnh tái tạo được commit.

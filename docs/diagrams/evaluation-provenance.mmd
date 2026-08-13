@@ -1,0 +1,22 @@
+flowchart LR
+    source["Street traffic.webm<br/>CC BY 3.0"] --> manifest["Provenance JSON<br/>URL, tác giả, license, SHA-256"]
+    manifest --> run["Lượt chạy cục bộ<br/>YOLO26 + ByteTrack"]
+    run --> predictions["CSV dự đoán<br/>đã đóng băng"]
+    run --> review["Khung hình 330–465<br/>Có hỗ trợ AI"]
+    review --> truth["Nhãn tham chiếu<br/>1 sự kiện bus, IN"]
+    predictions --> matcher["Khớp sự kiện<br/>dung sai ±5 frame"]
+    truth --> matcher
+    matcher --> metrics["Precision (độ chính xác): 0.20<br/>Recall (độ thu hồi): 1.00<br/>F1: 0.333"]
+    metrics --> caveat["Lát cắt pilot<br/>không phải benchmark tổng quát"]
+
+    classDef source fill:#E0F2FE,stroke:#0284C7,color:#0C4A6E,stroke-width:2px
+    classDef trace fill:#EFF6FF,stroke:#2563EB,color:#172554,stroke-width:2px
+    classDef review fill:#FFF7ED,stroke:#EA580C,color:#7C2D12,stroke-width:2px
+    classDef metric fill:#ECFDF5,stroke:#059669,color:#064E3B,stroke-width:2px
+    classDef caveat fill:#FEF2F2,stroke:#DC2626,color:#7F1D1D,stroke-width:2px
+
+    class source,manifest source
+    class run,predictions trace
+    class review,truth review
+    class matcher,metrics metric
+    class caveat caveat

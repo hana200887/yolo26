@@ -1,46 +1,44 @@
-# Provisional event annotations
+# Annotation sự kiện tạm thời
 
-This directory contains small, reviewable event annotations. It deliberately
-does **not** contain the source video: raw media remains local under
-`data/videos/` and is ignored by Git.
+Thư mục này chứa annotation sự kiện nhỏ, có thể review. Nó chủ ý **không**
+chứa video nguồn: media thô giữ local dưới `data/videos/` và bị Git ignore.
 
 ## Schema v1
 
-Ground-truth input for `traffic-analytics evaluate` is a UTF-8 CSV with these
-four required columns:
+Ground-truth input cho `traffic-analytics evaluate` là UTF-8 CSV có đúng bốn
+cột bắt buộc:
 
 ```csv
 event_id,frame_index,class_name,direction
 ```
 
-- `event_id`: positive, reviewer-assigned unique ID for the annotated event. It
-  is not a ByteTrack ID.
-- `frame_index`: zero-based frame at which the bottom-centre anchor first has
-  crossed the configured line.
-- `class_name`: one of the canonical vehicle classes: `bicycle`, `car`,
-  `motorcycle`, `bus`, or `truck`.
-- `direction`: `IN` for negative-to-positive line-side movement and `OUT` for
-  positive-to-negative movement. With the default horizontal line, `IN` means
-  top-to-bottom image movement and `OUT` bottom-to-top image movement.
+- `event_id`: ID dương, duy nhất do reviewer gán cho sự kiện annotation. Đây
+  không phải ByteTrack ID.
+- `frame_index`: frame zero-based mà bottom-centre anchor lần đầu đã đi qua
+  vạch được cấu hình.
+- `class_name`: một trong canonical vehicle class: `bicycle`, `car`,
+  `motorcycle`, `bus`, `truck`.
+- `direction`: `IN` cho chuyển động từ phía âm sang phía dương của vạch và
+  `OUT` cho phía dương sang phía âm. Với horizontal line mặc định, `IN` là
+  chuyển động ảnh từ trên xuống dưới và `OUT` là từ dưới lên trên.
 
-## Labeling protocol
+## Protocol gán nhãn
 
-1. Use the exact source checksum recorded in the paired provenance manifest.
-2. Review consecutive frames, not a sparse contact sheet. The output overlay is
-   allowed only to locate candidates; decide the event from the visible object
-   and configured line, never from a tracker ID.
-3. Create one event only when the same visible vehicle clearly changes side of
-   the line. Use the first frame after the crossing as `frame_index`.
-4. Exclude objects already on the post-crossing side at the start of the chosen
-   window, occluded objects whose transition cannot be seen, and apparent
-   crossings caused only by bounding-box or track-ID jitter.
-5. Record the continuous frame window and reviewer method alongside each CSV.
-   A single AI-assisted review is provisional; human verification or independent
-   double annotation is required before publishing aggregate accuracy claims.
+1. Dùng đúng source checksum ghi trong paired provenance manifest.
+2. Review frame liên tiếp, không dùng sparse contact sheet. Output overlay chỉ
+   được phép giúp tìm candidate; quyết định sự kiện dựa trên object nhìn thấy
+   và configured line, không bao giờ dựa vào tracker ID.
+3. Chỉ tạo một event khi cùng visible vehicle đổi phía của line rõ ràng. Dùng
+   frame đầu tiên sau giao cắt làm `frame_index`.
+4. Loại object đã ở phía sau giao cắt tại đầu cửa sổ, object bị che mà không
+   thấy được chuyển tiếp, và apparent crossing chỉ do bounding-box hoặc
+   track-ID jitter.
+5. Ghi continuous frame window và reviewer method cạnh mỗi CSV. Một lần review
+   có hỗ trợ AI chỉ là tạm thời; cần human verification hoặc double annotation
+   độc lập trước khi công bố aggregate accuracy.
 
-## Current pilot
+## Pilot hiện tại
 
-`street_traffic-window-330-465.v1.events.csv` covers frames 330–465 only. It
-is intentionally a narrowly scoped quality probe, not a full-video benchmark.
-Its provenance, fixed review output, predictions, and limitations are recorded
-in `docs/evidence/phase-2/`.
+`street_traffic-window-330-465.v1.events.csv` chỉ bao phủ frame 330–465. Nó
+cố ý là quality probe hẹp, không phải full-video benchmark. Provenance, fixed
+review output, prediction và giới hạn nằm trong `docs/evidence/phase-2/`.

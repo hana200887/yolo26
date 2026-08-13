@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 940" role="img" aria-labelledby="title description">
+  <title id="title">Kiến trúc phân tích giao thông</title>
+  <desc id="description">Luồng video cục bộ qua YOLO26, ByteTrack, quỹ đạo và bộ đếm qua vạch đến MP4, CSV và JSON.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="940" fill="#F8FAFC"/>
+  <rect x="56" y="46" width="1488" height="132" rx="24" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <rect x="88" y="78" width="10" height="68" rx="5" fill="#2563EB"/>
+  <text x="124" y="106" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" fill="#0F172A">Kiến trúc phân tích giao thông</text>
+  <text x="124" y="140" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="19" fill="#475569">Từ video cục bộ đến artifact đếm hướng có thể kiểm tra</text>
+
+  <text x="76" y="236" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.4" fill="#64748B">LUỒNG XỬ LÝ</text>
+
+  <g stroke="#64748B" stroke-width="3" fill="none" marker-end="url(#arrow)">
+    <path d="M300 393 H358"/>
+    <path d="M584 393 H642"/>
+    <path d="M868 393 H926"/>
+    <path d="M1152 393 H1210"/>
+    <path d="M1260 484 V522 H256 V622"/>
+    <path d="M1326 484 V554 H694 V622"/>
+    <path d="M1392 484 V586 H1132 V622"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="76" y="300" width="224" height="184" rx="20" fill="#E0F2FE" stroke="#0284C7" stroke-width="2"/>
+    <rect x="358" y="300" width="226" height="184" rx="20" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+    <rect x="642" y="300" width="226" height="184" rx="20" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+    <rect x="926" y="300" width="226" height="184" rx="20" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+    <rect x="1210" y="300" width="232" height="184" rx="20" fill="#ECFDF5" stroke="#059669" stroke-width="2"/>
+  </g>
+
+  <g font-family="Inter, Segoe UI, Arial, sans-serif">
+    <text x="102" y="350" font-size="15" font-weight="700" fill="#0369A1">ĐẦU VÀO</text>
+    <text x="102" y="390" font-size="24" font-weight="700" fill="#0C4A6E">Video giao thông</text>
+    <text x="102" y="421" font-size="20" fill="#0C4A6E">cục bộ</text>
+    <text x="102" y="454" font-size="15" fill="#475569">Không webcam / RTSP</text>
+
+    <text x="384" y="350" font-size="15" font-weight="700" fill="#2563EB">PHÁT HIỆN</text>
+    <text x="384" y="390" font-size="25" font-weight="700" fill="#172554">YOLO26</text>
+    <text x="384" y="422" font-size="15" fill="#475569">Lọc lớp phương tiện</text>
+    <text x="384" y="450" font-size="15" fill="#475569">ngưỡng suy luận 0.10</text>
+
+    <text x="668" y="350" font-size="15" font-weight="700" fill="#2563EB">THEO VẾT</text>
+    <text x="668" y="390" font-size="25" font-weight="700" fill="#172554">ByteTrack</text>
+    <text x="668" y="422" font-size="15" fill="#475569">Định danh bền vững</text>
+    <text x="668" y="450" font-size="15" fill="#475569">giữa các khung hình</text>
+
+    <text x="952" y="350" font-size="15" font-weight="700" fill="#2563EB">QUỸ ĐẠO</text>
+    <text x="952" y="390" font-size="24" font-weight="700" fill="#172554">Đáy-tâm hộp</text>
+    <text x="952" y="422" font-size="15" fill="#475569">Chuẩn hóa vị trí</text>
+    <text x="952" y="450" font-size="15" fill="#475569">và hướng chuyển động</text>
+
+    <text x="1236" y="350" font-size="15" font-weight="700" fill="#059669">SỰ KIỆN</text>
+    <text x="1236" y="390" font-size="22" font-weight="700" fill="#064E3B">Đếm qua vạch</text>
+    <text x="1236" y="419" font-size="18" font-weight="700" fill="#064E3B">hữu hạn</text>
+    <text x="1236" y="450" font-size="15" fill="#475569">Khử trùng lặp theo hướng</text>
+  </g>
+
+  <text x="76" y="588" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.4" fill="#64748B">ARTIFACT CÓ THỂ REVIEW</text>
+  <g filter="url(#shadow)" font-family="Inter, Segoe UI, Arial, sans-serif">
+    <rect x="76" y="622" width="360" height="132" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+    <rect x="514" y="622" width="360" height="132" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+    <rect x="952" y="622" width="360" height="132" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+    <text x="108" y="674" font-size="23" font-weight="700" fill="#0F172A">MP4 chú thích</text>
+    <text x="108" y="708" font-size="16" fill="#475569">Khung bao, ID, quỹ đạo, vạch đếm</text>
+    <text x="546" y="674" font-size="23" font-weight="700" fill="#0F172A">CSV sự kiện</text>
+    <text x="546" y="708" font-size="16" fill="#475569">frame, track, lớp, hướng</text>
+    <text x="984" y="674" font-size="23" font-weight="700" fill="#0F172A">JSON tóm tắt</text>
+    <text x="984" y="708" font-size="16" fill="#475569">thời gian chạy và FPS đo được</text>
+  </g>
+
+  <rect x="76" y="812" width="1236" height="78" rx="16" fill="#EFF6FF" stroke="#BFDBFE"/>
+  <text x="108" y="846" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17" font-weight="700" fill="#1E3A8A">Ranh giới rõ ràng:</text>
+  <text x="284" y="846" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="17" fill="#334155">adapter cô lập Ultralytics; logic quỹ đạo, giao cắt và bằng chứng sự kiện nằm trong repository.</text>
+</svg>

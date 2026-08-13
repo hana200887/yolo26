@@ -75,9 +75,7 @@ def test_architecture_svg_connects_the_counter_to_each_output_card() -> None:
 
 def test_evaluation_svg_preserves_prediction_and_truth_topology() -> None:
     evaluation_svg = (DIAGRAMS_PATH / "evaluation-provenance.svg").read_text(encoding="utf-8")
-    evaluation_mermaid = (DIAGRAMS_PATH / "evaluation-provenance.mmd").read_text(
-        encoding="utf-8"
-    )
+    evaluation_mermaid = (DIAGRAMS_PATH / "evaluation-provenance.mmd").read_text(encoding="utf-8")
 
     for connector in (
         'd="M899 476 V542 H684 V570"',
@@ -98,10 +96,28 @@ def test_evaluation_svg_preserves_prediction_and_truth_topology() -> None:
 def test_evaluation_diagram_labels_precision_and_recall_unambiguously() -> None:
     expected_labels = ("Precision (độ chính xác)", "Recall (độ thu hồi)")
 
-    for path in (DIAGRAMS_PATH / "evaluation-provenance.svg", DIAGRAMS_PATH / "evaluation-provenance.mmd"):
+    for path in (
+        DIAGRAMS_PATH / "evaluation-provenance.svg",
+        DIAGRAMS_PATH / "evaluation-provenance.mmd",
+    ):
         diagram = path.read_text(encoding="utf-8")
         for label in expected_labels:
             assert label in diagram
+
+
+def test_evaluation_svg_wraps_metric_and_caveat_copy_inside_their_cards() -> None:
+    evaluation_svg = (DIAGRAMS_PATH / "evaluation-provenance.svg").read_text(encoding="utf-8")
+
+    for text_line in (
+        "Precision (độ chính xác) 0.20",
+        "Recall (độ thu hồi) 1.00",
+        "F1 0.333 • 1 TP, 4 FP, 0 FN",
+        "Cần clip liên tục dài hơn, hai người gán nhãn độc lập và ghi nhận mức đồng thuận",
+        "trước khi báo cáo độ chính xác tổng hợp.",
+    ):
+        assert text_line in evaluation_svg
+
+    assert "Recall (độ thu hồi) 1.00 • F1 0.333" not in evaluation_svg
 
 
 def test_readme_uses_vietnamese_visual_architecture_documentation() -> None:

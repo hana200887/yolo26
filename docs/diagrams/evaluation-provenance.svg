@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1040" role="img" aria-labelledby="title description">
+  <title id="title">Luồng provenance và đánh giá pilot</title>
+  <desc id="description">Nguồn video CC BY 3.0 được ghi provenance, chạy cục bộ, tạo dự đoán và nhãn tham chiếu có hỗ trợ AI, sau đó đối sánh để cho ra chỉ số pilot với giới hạn rõ ràng.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1040" fill="#F8FAFC"/>
+  <rect x="56" y="46" width="1488" height="132" rx="24" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <rect x="88" y="78" width="10" height="68" rx="5" fill="#059669"/>
+  <text x="124" y="106" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" fill="#0F172A">Luồng provenance và đánh giá pilot</text>
+  <text x="124" y="140" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="19" fill="#475569">Gắn nguồn, giới hạn review và kết quả vào cùng một đường kiểm tra</text>
+
+  <text x="76" y="234" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.4" fill="#64748B">NGUỒN VÀ DẤU VẾT</text>
+  <g stroke="#64748B" stroke-width="3" fill="none" marker-end="url(#arrow)">
+    <path d="M364 375 H418"/>
+    <path d="M706 375 H760"/>
+    <path d="M1038 375 H1092"/>
+    <path d="M899 476 V542 H684 V570"/>
+    <path d="M1256 476 V542 H1036 V570"/>
+    <path d="M684 760 V786 H1212 V665 H1232"/>
+    <path d="M1036 760 V786 H1212 V695 H1232"/>
+    <path d="M1344 760 V802"/>
+    <path d="M1092 877 H974"/>
+  </g>
+
+  <g filter="url(#shadow)" font-family="Inter, Segoe UI, Arial, sans-serif">
+    <rect x="76" y="282" width="288" height="194" rx="20" fill="#E0F2FE" stroke="#0284C7" stroke-width="2"/>
+    <rect x="418" y="282" width="288" height="194" rx="20" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+    <rect x="760" y="282" width="278" height="194" rx="20" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+    <rect x="1092" y="282" width="328" height="194" rx="20" fill="#FFF7ED" stroke="#EA580C" stroke-width="2"/>
+  </g>
+  <g font-family="Inter, Segoe UI, Arial, sans-serif">
+    <text x="108" y="334" font-size="15" font-weight="700" fill="#0369A1">NGUỒN CÔNG KHAI</text>
+    <text x="108" y="374" font-size="23" font-weight="700" fill="#0C4A6E">Street traffic.webm</text>
+    <text x="108" y="410" font-size="18" fill="#0C4A6E">CC BY 3.0</text>
+    <text x="108" y="444" font-size="15" fill="#475569">Không commit media gốc</text>
+
+    <text x="450" y="334" font-size="15" font-weight="700" fill="#2563EB">PROVENANCE JSON</text>
+    <text x="450" y="374" font-size="21" font-weight="700" fill="#172554">URL • tác giả • license</text>
+    <text x="450" y="408" font-size="21" font-weight="700" fill="#172554">SHA-256</text>
+    <text x="450" y="444" font-size="15" fill="#475569">Tái tạo đúng nguồn đầu vào</text>
+
+    <text x="792" y="334" font-size="15" font-weight="700" fill="#2563EB">LƯỢT CHẠY CỤC BỘ</text>
+    <text x="792" y="374" font-size="23" font-weight="700" fill="#172554">YOLO26 + ByteTrack</text>
+    <text x="792" y="408" font-size="16" fill="#475569">weights, video và MP4</text>
+    <text x="792" y="436" font-size="16" fill="#475569">được giữ ở máy local</text>
+
+    <text x="1124" y="334" font-size="15" font-weight="700" fill="#C2410C">REVIEW CÓ GIỚI HẠN</text>
+    <text x="1124" y="374" font-size="21" font-weight="700" fill="#7C2D12">Khung hình 330–465</text>
+    <text x="1124" y="408" font-size="17" fill="#7C2D12">Có hỗ trợ AI</text>
+    <text x="1124" y="440" font-size="15" fill="#475569">Chưa có xác minh độc lập</text>
+  </g>
+
+  <text x="76" y="548" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.4" fill="#64748B">ĐỐI SÁNH SỰ KIỆN</text>
+  <g filter="url(#shadow)" font-family="Inter, Segoe UI, Arial, sans-serif">
+    <rect x="528" y="570" width="312" height="190" rx="20" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+    <rect x="894" y="570" width="284" height="190" rx="20" fill="#FFF7ED" stroke="#EA580C" stroke-width="2"/>
+    <rect x="1232" y="570" width="224" height="190" rx="20" fill="#ECFDF5" stroke="#059669" stroke-width="2"/>
+    <text x="560" y="622" font-size="15" font-weight="700" fill="#2563EB">DỰ ĐOÁN ĐÃ ĐÓNG BĂNG</text>
+    <text x="560" y="662" font-size="22" font-weight="700" fill="#172554">CSV dự đoán</text>
+    <text x="560" y="696" font-size="16" fill="#475569">Sự kiện trong cùng cửa sổ</text>
+    <text x="560" y="724" font-size="16" fill="#475569">có thể chạy lại không cần video</text>
+    <text x="926" y="622" font-size="15" font-weight="700" fill="#C2410C">NHÃN THAM CHIẾU</text>
+    <text x="926" y="662" font-size="21" font-weight="700" fill="#7C2D12">1 sự kiện bus, IN</text>
+    <text x="926" y="696" font-size="16" fill="#475569">Từ visual review có hỗ trợ AI</text>
+    <text x="926" y="724" font-size="16" fill="#475569">không phải nhãn độc lập</text>
+    <text x="1264" y="622" font-size="15" font-weight="700" fill="#059669">SO KHỚP</text>
+    <text x="1264" y="662" font-size="20" font-weight="700" fill="#064E3B">Dung sai</text>
+    <text x="1264" y="696" font-size="20" font-weight="700" fill="#064E3B">±5 frame</text>
+    <text x="1264" y="724" font-size="15" fill="#475569">event_id + lớp + hướng</text>
+  </g>
+
+  <g filter="url(#shadow)" font-family="Inter, Segoe UI, Arial, sans-serif">
+    <rect x="1092" y="802" width="364" height="150" rx="20" fill="#ECFDF5" stroke="#059669" stroke-width="2"/>
+    <text x="1124" y="842" font-size="14" font-weight="700" fill="#059669">KẾT QUẢ CỬA SỔ PILOT</text>
+    <text x="1124" y="874" font-size="14" font-weight="700" fill="#064E3B">Precision (độ chính xác) 0.20</text>
+    <text x="1124" y="902" font-size="14" font-weight="700" fill="#064E3B">Recall (độ thu hồi) 1.00</text>
+    <text x="1124" y="930" font-size="14" font-weight="700" fill="#064E3B">F1 0.333 • 1 TP, 4 FP, 0 FN</text>
+  </g>
+  <rect x="76" y="802" width="898" height="150" rx="20" fill="#FEF2F2" stroke="#FCA5A5" stroke-width="2"/>
+  <text x="108" y="848" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" fill="#B91C1C">CÁCH ĐỌC ĐÚNG</text>
+  <text x="108" y="884" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="21" font-weight="700" fill="#7F1D1D">Đây là lát cắt pilot, không phải benchmark tổng quát.</text>
+  <text x="108" y="916" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="15" fill="#7F1D1D">Cần clip liên tục dài hơn, hai người gán nhãn độc lập và ghi nhận mức đồng thuận</text>
+  <text x="108" y="940" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="15" fill="#7F1D1D">trước khi báo cáo độ chính xác tổng hợp.</text>
+</svg>

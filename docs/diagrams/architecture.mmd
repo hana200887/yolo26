@@ -1,0 +1,18 @@
+flowchart LR
+    video["Video giao thông<br/>cục bộ"] --> detector["Phát hiện<br/>YOLO26"]
+    detector --> tracker["Định danh bền vững<br/>ByteTrack"]
+    tracker --> trajectory["Quỹ đạo<br/>đáy-tâm"]
+    trajectory --> counter["Đếm qua vạch hữu hạn<br/>và khử trùng lặp"]
+    counter --> mp4["MP4<br/>chú thích"]
+    counter --> csv["CSV sự kiện<br/>có thể kiểm tra"]
+    counter --> json["JSON<br/>tóm tắt lượt chạy"]
+
+    classDef input fill:#E0F2FE,stroke:#0284C7,color:#0C4A6E,stroke-width:2px
+    classDef core fill:#EFF6FF,stroke:#2563EB,color:#172554,stroke-width:2px
+    classDef event fill:#ECFDF5,stroke:#059669,color:#064E3B,stroke-width:2px
+    classDef output fill:#F8FAFC,stroke:#64748B,color:#0F172A,stroke-width:2px
+
+    class video input
+    class detector,tracker,trajectory core
+    class counter event
+    class mp4,csv,json output

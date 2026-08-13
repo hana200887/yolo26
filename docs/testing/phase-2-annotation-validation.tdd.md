@@ -1,26 +1,26 @@
-# Phase 2.1 annotation validation â€” TDD record
+# Xác thực annotation Phase 2.1 — ghi nhận TDD
 
-## Scope and user journeys
+## Phạm vi và user journey
 
-No external plan file was used. This focused follow-up closes two review
-findings on the ground-truth CSV boundary.
+Không dùng file kế hoạch bên ngoài. Follow-up tập trung này đóng hai phát hiện
+review ở CSV ground-truth boundary.
 
-- As an evaluator, I need every reviewer-assigned event ID to be unique, so a
-  duplicate row cannot silently distort event-level precision and recall.
-- As an annotator, I need a typo in `class_name` rejected before evaluation, so
-  metrics are not reported against a label outside the published taxonomy.
-- As a reviewer, I need the CSV header to be unambiguous, so duplicate or
-  undocumented fields cannot be silently reinterpreted by the CSV parser.
+- Là một evaluator, tôi cần mỗi event ID do reviewer gán là duy nhất, để row
+  trùng không âm thầm làm sai precision và recall ở mức sự kiện.
+- Là một annotator, tôi cần lỗi gõ trong `class_name` bị từ chối trước khi
+  đánh giá, để metric không báo cáo với nhãn ngoài taxonomy công bố.
+- Là một reviewer, tôi cần CSV header không mơ hồ, để field trùng hay không có
+  tài liệu không bị CSV parser diễn giải lại im lặng.
 
-## RED â†’ GREEN checkpoints
+## Checkpoint RED → GREEN
 
-| Behavior | RED evidence | GREEN evidence | Checkpoints | Guarantee |
+| Hành vi | Bằng chứng RED | Bằng chứng GREEN | Checkpoint | Cam kết |
 | --- | --- | --- | --- | --- |
-| Duplicate ground-truth IDs | `uv run --frozen pytest tests/unit/test_evaluation.py -q` â†’ **2 failed, 8 passed**; duplicate numeric IDs `1` and `01` were accepted | Same command â†’ **10 passed**; loader and CLI integration tests â†’ **18 passed** | `e945167`, `bc20693` | Parsed ground-truth `event_id` values must be unique, including equivalent integer spellings. |
-| Published vehicle taxonomy | Same RED command â†’ `buss` was accepted | Same GREEN command â†’ **10 passed**; loader and CLI integration tests â†’ **18 passed** | `e945167`, `bc20693` | Ground truth accepts only `bicycle`, `car`, `motorcycle`, `bus`, and `truck`. |
-| Unambiguous schema and canonical taxonomy | `uv run --frozen pytest tests/unit/test_evaluation.py -q` â†’ **2 failed, 10 passed**; duplicate headers and a second hard-coded class set remained | `uv run --frozen pytest tests/unit/test_evaluation.py tests/unit/test_config.py tests/unit/test_cli.py -q` â†’ **29 passed** | `78ae1b7`, `bc20693` | The header must exactly equal the four published fields, and evaluation reuses the one vehicle taxonomy from configuration. |
+| Ground-truth ID trùng | `uv run --frozen pytest tests/unit/test_evaluation.py -q` → **2 failed, 8 passed**; ID số `1` và `01` bị chấp nhận | Cùng lệnh → **10 passed**; loader và CLI integration test → **18 passed** | `e945167`, `bc20693` | `event_id` ground-truth sau parse phải duy nhất, kể cả cách viết số tương đương. |
+| Taxonomy vehicle đã công bố | Cùng lệnh RED → `buss` bị chấp nhận | Cùng lệnh GREEN → **10 passed**; loader và CLI integration test → **18 passed** | `e945167`, `bc20693` | Ground truth chỉ nhận `bicycle`, `car`, `motorcycle`, `bus`, `truck`. |
+| Schema rõ ràng và taxonomy chuẩn | `uv run --frozen pytest tests/unit/test_evaluation.py -q` → **2 failed, 10 passed**; header trùng và class set hard-code thứ hai còn tồn tại | `uv run --frozen pytest tests/unit/test_evaluation.py tests/unit/test_config.py tests/unit/test_cli.py -q` → **29 passed** | `78ae1b7`, `bc20693` | Header phải bằng đúng bốn field đã công bố; evaluation dùng chung vehicle taxonomy từ configuration. |
 
-## Final verification
+## Xác minh cuối
 
 ```powershell
 uv run --frozen ruff format --check .
@@ -30,21 +30,19 @@ uv run --frozen pytest --cov=traffic_analytics --cov-report=term-missing -q
 uv run --frozen pip-audit
 ```
 
-Results:
+Kết quả:
 
 - Ruff format: **28 files already formatted**.
 - Ruff lint: **All checks passed**.
 - Strict mypy: **Success: no issues found in 11 source files**.
-- Tests: **89 passed, 1 skipped**; branch-aware coverage **85.54%** (minimum
-  80%). The skipped test remains the deliberately opt-in real-model smoke
-  test.
-- Dependency audit: **No known vulnerabilities found**. The editable local
-  package is skipped because it is not published on PyPI.
+- Tests: **89 passed, 1 skipped**; branch-aware coverage **85.54%** (tối thiểu
+  80%). Test skipped vẫn là real-model smoke test opt-in có chủ ý.
+- Dependency audit: **No known vulnerabilities found**. Package local editable
+  bị bỏ qua vì chưa phát hành trên PyPI.
 
-## Scope limits
+## Giới hạn phạm vi
 
-- Prediction CSV remains intentionally unrestricted by this annotation-only
-  taxonomy check; model configuration already governs emitted prediction
-  classes.
-- Existing source media, pilot annotation data, and prediction evidence are not
-  rewritten in this hardening change.
+- Prediction CSV chủ ý không bị giới hạn bởi taxonomy annotation-only này;
+  model configuration đã quyết định lớp prediction được tạo.
+- Source media, pilot annotation data và prediction evidence hiện có không bị
+  viết lại trong hardening change này.

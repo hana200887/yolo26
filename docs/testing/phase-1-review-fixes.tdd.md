@@ -1,29 +1,27 @@
-# Phase 1 review fixes — TDD evidence
+# Sửa lỗi review Phase 1 — bằng chứng TDD
 
-## Scope and journeys
+## Phạm vi và user journey
 
-This report covers the three actionable findings from the Phase 1 defect-first
-review. No external plan file was used.
+Báo cáo này bao phủ ba phát hiện có thể hành động từ defect-first review của
+Phase 1. Không dùng file kế hoạch bên ngoài.
 
-- As an evaluator, I need event matching to maximize valid one-to-one matches
-  within the configured frame tolerance, so reported precision, recall, and F1
-  do not depend on input order.
-- As a traffic analyst, I need an identity that briefly disappears to preserve
-  its age within the ByteTrack buffer, so a returning vehicle is not rejected by
-  the minimum-age counting guard.
-- As a video user, I need failed runs to leave no final output artifacts, so a
-  partial video cannot be mistaken for a completed analysis.
+- Là một evaluator, tôi cần khớp sự kiện một-một hợp lệ nhiều nhất trong dung
+  sai frame đã cấu hình, để precision, recall và F1 không phụ thuộc thứ tự input.
+- Là một traffic analyst, tôi cần ID biến mất ngắn hạn vẫn giữ tuổi trong
+  ByteTrack buffer, để vehicle quay lại không bị minimum-age guard loại bỏ.
+- Là một người dùng video, tôi cần lượt chạy lỗi không để lại final output,
+  để video dở dang không bị hiểu nhầm là phân tích hoàn tất.
 
-## RED → GREEN record
+## Ghi nhận RED → GREEN
 
-| Behavior | RED evidence | GREEN evidence | Guarantee |
+| Hành vi | Bằng chứng RED | Bằng chứng GREEN | Cam kết |
 | --- | --- | --- | --- |
-| Maximum-cardinality evaluation matching | `uv run --frozen pytest tests/unit/test_evaluation.py tests/integration/test_ultralytics_adapter.py tests/e2e/test_local_video_flow.py -q` → 3 failed, including TP `1` instead of `2` | Same command after fixes → 19 passed | Events are grouped by class/direction, sorted by frame, and matched one-to-one to maximize the number of in-tolerance pairs. |
-| Track age survives a short unconfirmed gap and expires after buffer | Same RED command → returning ID had age `1` instead of `3` | Same command after fixes → 19 passed | Per-ID age/last-seen state is retained up to `track_buffer`, then pruned. |
-| Failed run does not expose incomplete files | Same RED command → `.mp4` remained in output directory | Same command after fixes → 19 passed | Video, events, and summary use same-directory temporary paths; failures close the writer and remove current-run temporary/published artifacts. |
-| Late event-write failure does not expose video | Added regression test after the atomic-output refactor | `uv run --frozen pytest tests/e2e/test_local_video_flow.py tests/unit/test_evaluation.py tests/integration/test_ultralytics_adapter.py -q` → 20 passed | Artifacts are published only after event CSV and summary generation both succeed. |
+| Khớp đánh giá maximum-cardinality | `uv run --frozen pytest tests/unit/test_evaluation.py tests/integration/test_ultralytics_adapter.py tests/e2e/test_local_video_flow.py -q` → 3 failed, gồm TP `1` thay vì `2` | Cùng lệnh sau khi sửa → 19 passed | Sự kiện được nhóm theo lớp/hướng, sắp xếp theo frame và khớp một-một để tối đa số cặp trong dung sai. |
+| Tuổi track qua gap ngắn rồi hết hạn theo buffer | Cùng lệnh RED → ID quay lại có tuổi `1` thay vì `3` | Cùng lệnh sau khi sửa → 19 passed | Trạng thái tuổi/last-seen theo ID được giữ đến `track_buffer`, sau đó prune. |
+| Lượt chạy lỗi không lộ file chưa hoàn thiện | Cùng lệnh RED → `.mp4` còn trong output directory | Cùng lệnh sau khi sửa → 19 passed | Video, event và summary dùng temporary path cùng directory; lỗi sẽ đóng writer và xóa artifact temporary/published của lượt chạy hiện tại. |
+| Lỗi ghi event muộn không lộ video | Bổ sung regression test sau atomic-output refactor | `uv run --frozen pytest tests/e2e/test_local_video_flow.py tests/unit/test_evaluation.py tests/integration/test_ultralytics_adapter.py -q` → 20 passed | Artifact chỉ publish sau khi event CSV và summary cùng tạo thành công. |
 
-## Final verification
+## Xác minh cuối
 
 ```powershell
 uv run --frozen ruff format --check .
@@ -32,14 +30,14 @@ uv run --frozen mypy src
 uv run --frozen pytest --cov=traffic_analytics --cov-report=term-missing -q
 ```
 
-Result: Ruff and strict mypy passed; **74 passed, 1 skipped**; total branch-aware
-coverage was **84.07%** (minimum 80%).
+Kết quả: Ruff và strict mypy pass; **74 passed, 1 skipped**; branch-aware
+coverage là **84.07%** (tối thiểu 80%).
 
-## Known gaps
+## Khoảng trống đã biết
 
-- The real model test remains opt-in (`RUN_MODEL_TESTS=1`) because it may load
-  local weights and has already been smoke-tested separately in this workspace.
-- Phase 2 will add an appropriately licensed traffic clip, manual ground truth,
-  visual review, and measured performance evidence.
-- Git checkpoint commits were not created because this checkout has no configured
-  Git author identity; no identity was invented.
+- Real model test vẫn opt-in (`RUN_MODEL_TESTS=1`) vì có thể load weights local
+  và đã được smoke-test riêng trong workspace này.
+- Phase 2 sẽ thêm traffic clip có license phù hợp, manual ground truth, visual
+  review và bằng chứng performance đã đo.
+- Git checkpoint commit không được tạo vì checkout lúc đó chưa cấu hình Git
+  author identity; không tự tạo identity.
