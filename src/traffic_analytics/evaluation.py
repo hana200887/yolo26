@@ -132,6 +132,8 @@ def _load_event_rows(
                 raise ValueError(f"{format_name} must contain exactly: {', '.join(fields)}")
             for row_number, row in enumerate(reader, start=2):
                 try:
+                    if None in row or any(row.get(field) is None for field in fields):
+                        raise ValueError("event row has the wrong number of fields")
                     events.append(
                         CountEvent(
                             track_id=int(row[identifier_field]),

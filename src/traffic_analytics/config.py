@@ -8,6 +8,8 @@ from typing import Annotated, Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from traffic_analytics.geometry import MINIMUM_LINE_LENGTH
+
 MAX_CONFIG_BYTES = 1_000_000
 VEHICLE_CLASSES = frozenset({"bicycle", "bus", "car", "motorcycle", "truck"})
 SUPPORTED_CLASSES = VEHICLE_CLASSES | {"person"}
@@ -92,7 +94,9 @@ class CountingLineConfig(FrozenConfig):
 
     @model_validator(mode="after")
     def validate_line(self) -> CountingLineConfig:
-        if self.start == self.end:
+        horizontal = self.end[0] - self.start[0]
+        vertical = self.end[1] - self.start[1]
+        if horizontal**2 + vertical**2 <= MINIMUM_LINE_LENGTH**2:
             raise ValueError("counting line endpoints must be different")
         return self
 
@@ -112,6 +116,9 @@ class CountingConfig(FrozenConfig):
     def validate_counted_classes(cls, values: tuple[str, ...]) -> tuple[str, ...]:
         if not values or len(values) != len(set(values)):
             raise ValueError("counted_classes must be non-empty and unique")
+        unknown = set(values) - VEHICLE_CLASSES
+        if unknown:
+            raise ValueError(f"counted_classes must contain only vehicle classes: {sorted(unknown)}")
         return values
 
     @model_validator(mode="after")

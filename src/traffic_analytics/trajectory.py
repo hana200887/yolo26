@@ -74,7 +74,7 @@ def update_trajectories(
     tracked_objects: list[TrackedObject] = []
 
     for observation in observations:
-        previous_points = previous.get(observation.track_id)
+        previous_points = next_histories.get(observation.track_id)
         old_points = previous_points.points if previous_points is not None else ()
         points = (*old_points, observation.anchor)[-max_length:]
         history = TrackHistory(observation.track_id, points, frame_index)

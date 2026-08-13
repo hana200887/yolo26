@@ -85,7 +85,7 @@ def update_counter(
         for track_id, item in previous.items()
         if frame_index - item.last_seen_frame <= stale_after
     }
-    counted = set(state.counted)
+    counted = state.counted
     new_events: list[CountEvent] = []
 
     for track in tracks:
@@ -94,7 +94,7 @@ def update_counter(
 
         point = normalize_point(track.anchor, frame_size)
         side = line_side(point, line_start, line_end, deadband=deadband)
-        prior = previous.get(track.track_id)
+        prior = next_states.get(track.track_id)
 
         if prior is None:
             if side != 0:
@@ -122,7 +122,7 @@ def update_counter(
             )
             dedupe_key = (track.track_id, direction)
             if dedupe_key not in counted:
-                counted.add(dedupe_key)
+                counted = counted | {dedupe_key}
                 new_events.append(
                     CountEvent(
                         track_id=track.track_id,
@@ -141,7 +141,7 @@ def update_counter(
 
     next_state = CounterState(
         track_states=tuple(sorted(next_states.values(), key=lambda item: item.track_id)),
-        counted=frozenset(counted),
-        events=(*state.events, *new_events),
+        counted=counted,
+        events=state.events if not new_events else (*state.events, *new_events),
     )
     return next_state, tuple(new_events)

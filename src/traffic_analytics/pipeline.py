@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -35,6 +36,7 @@ from traffic_analytics.visualization import render_frame
 Frame = NDArray[np.uint8]
 SUPPORTED_VIDEO_SUFFIXES = frozenset({".avi", ".m4v", ".mkv", ".mov", ".mp4", ".webm"})
 OUTPUT_ARTIFACT_SUFFIXES = (".mp4", ".events.csv", ".summary.json")
+OUTPUT_RESERVATION_SUFFIX = ".reservation"
 DEFAULT_OUTPUT_FPS = 30.0
 MAX_REASONABLE_OUTPUT_FPS = 240.0
 
@@ -200,10 +202,39 @@ def _unique_output_base(output_dir: Path, source: Path, mode: PipelineMode) -> P
     stem = f"{source.stem}-{mode.value}"
     candidate = output_dir / stem
     suffix = 1
-    while any(candidate.with_suffix(suffix).exists() for suffix in OUTPUT_ARTIFACT_SUFFIXES):
-        candidate = output_dir / f"{stem}.{suffix}"
+    while any(_artifact_path(candidate, artifact_suffix).exists() for artifact_suffix in OUTPUT_ARTIFACT_SUFFIXES):
+        candidate = output_dir / f"{stem}-{suffix}"
         suffix += 1
     return candidate
+
+
+def _artifact_path(output_base: Path, artifact_suffix: str) -> Path:
+    """Build an artifact path without discarding dots from the source name."""
+
+    return output_base.parent / f"{output_base.name}{artifact_suffix}"
+
+
+def _reserve_output_base(output_dir: Path, source: Path, mode: PipelineMode) -> tuple[Path, Path]:
+    """Reserve an output base so concurrent runs cannot select the same artifacts."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stem = f"{source.stem}-{mode.value}"
+    suffix = 0
+    while True:
+        base_name = stem if suffix == 0 else f"{stem}-{suffix}"
+        output_base = output_dir / base_name
+        reservation = _artifact_path(output_base, OUTPUT_RESERVATION_SUFFIX)
+        try:
+            with reservation.open("x", encoding="utf-8"):
+                pass
+        except FileExistsError:
+            suffix += 1
+            continue
+        if any(_artifact_path(output_base, artifact_suffix).exists() for artifact_suffix in OUTPUT_ARTIFACT_SUFFIXES):
+            _remove_artifact(reservation)
+            suffix += 1
+            continue
+        return output_base, reservation
 
 
 def _write_events(path: Path, events: tuple[CountEvent, ...]) -> None:
@@ -257,9 +288,11 @@ def _remove_artifact(path: Path) -> None:
 def _publish_artifact(temporary_path: Path, final_path: Path) -> None:
     """Publish a complete same-filesystem artifact without silently overwriting one."""
 
-    if final_path.exists():
+    try:
+        os.link(temporary_path, final_path)
+    except FileExistsError as exc:
         raise FileExistsError(f"refusing to overwrite existing output: {final_path}")
-    temporary_path.replace(final_path)
+    temporary_path.unlink()
 
 
 def run_video(
@@ -291,6 +324,7 @@ def run_video(
     temporary_video_path: Path | None = None
     temporary_events_path: Path | None = None
     temporary_summary_path: Path | None = None
+    reservation_path: Path | None = None
     published_paths: list[Path] = []
     total_detections = 0
     total_tracks = 0
@@ -299,14 +333,15 @@ def run_video(
     try:
         source_fps = _safe_output_fps(float(capture.get(cv2.CAP_PROP_FPS)))
         output_base = (
-            _unique_output_base(config.video.output_dir, source_path, mode)
+            _reserve_output_base(config.video.output_dir, source_path, mode)
             if config.video.save_output
             else None
         )
         if output_base is not None:
-            video_path = output_base.with_suffix(".mp4")
-            events_path = output_base.with_suffix(".events.csv")
-            summary_path = output_base.with_suffix(".summary.json")
+            output_base, reservation_path = output_base
+            video_path = _artifact_path(output_base, ".mp4")
+            events_path = _artifact_path(output_base, ".events.csv")
+            summary_path = _artifact_path(output_base, ".summary.json")
             temporary_video_path = _temporary_output_path(output_base, ".mp4")
             temporary_events_path = _temporary_output_path(output_base, ".events.csv")
             temporary_summary_path = _temporary_output_path(output_base, ".summary.json")
@@ -410,3 +445,5 @@ def run_video(
             writer.release()
         if show_preview:
             cv2.destroyAllWindows()
+        if reservation_path is not None:
+            _remove_artifact(reservation_path)

@@ -6,7 +6,7 @@ from math import hypot
 
 from traffic_analytics.models import Point
 
-_EPSILON = 1e-9
+MINIMUM_LINE_LENGTH = 1e-9
 
 
 def normalize_point(point: Point, frame_size: tuple[int, int]) -> Point:
@@ -24,7 +24,7 @@ def signed_distance_to_line(point: Point, start: Point, end: Point) -> float:
     delta_x = end.x - start.x
     delta_y = end.y - start.y
     length = hypot(delta_x, delta_y)
-    if length <= _EPSILON:
+    if length <= MINIMUM_LINE_LENGTH:
         raise ValueError("line endpoints must be different")
     cross_product = delta_x * (point.y - start.y) - delta_y * (point.x - start.x)
     return cross_product / length
@@ -47,8 +47,12 @@ def _orientation(first: Point, second: Point, third: Point) -> float:
 
 def _on_segment(first: Point, point: Point, second: Point) -> bool:
     return (
-        min(first.x, second.x) - _EPSILON <= point.x <= max(first.x, second.x) + _EPSILON
-        and min(first.y, second.y) - _EPSILON <= point.y <= max(first.y, second.y) + _EPSILON
+        min(first.x, second.x) - MINIMUM_LINE_LENGTH
+        <= point.x
+        <= max(first.x, second.x) + MINIMUM_LINE_LENGTH
+        and min(first.y, second.y) - MINIMUM_LINE_LENGTH
+        <= point.y
+        <= max(first.y, second.y) + MINIMUM_LINE_LENGTH
     )
 
 
@@ -65,8 +69,12 @@ def segments_intersect(
     o3 = _orientation(second_start, second_end, first_start)
     o4 = _orientation(second_start, second_end, first_end)
 
-    if ((o1 > _EPSILON and o2 < -_EPSILON) or (o1 < -_EPSILON and o2 > _EPSILON)) and (
-        (o3 > _EPSILON and o4 < -_EPSILON) or (o3 < -_EPSILON and o4 > _EPSILON)
+    if (
+        (o1 > MINIMUM_LINE_LENGTH and o2 < -MINIMUM_LINE_LENGTH)
+        or (o1 < -MINIMUM_LINE_LENGTH and o2 > MINIMUM_LINE_LENGTH)
+    ) and (
+        (o3 > MINIMUM_LINE_LENGTH and o4 < -MINIMUM_LINE_LENGTH)
+        or (o3 < -MINIMUM_LINE_LENGTH and o4 > MINIMUM_LINE_LENGTH)
     ):
         return True
 
@@ -77,6 +85,6 @@ def segments_intersect(
         (o4, first_end, second_start, second_end),
     )
     return any(
-        abs(value) <= _EPSILON and _on_segment(start, point, end)
+        abs(value) <= MINIMUM_LINE_LENGTH and _on_segment(start, point, end)
         for value, point, start, end in collinear_cases
     )

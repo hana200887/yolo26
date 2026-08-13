@@ -72,7 +72,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         print(json.dumps(summary.to_dict(), indent=2))
         return 0
-    except (FileNotFoundError, RuntimeError, ValueError) as exc:
+    except (FileNotFoundError, OSError, RuntimeError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
