@@ -20,13 +20,13 @@ MAX_DEMO_GIF_BYTES = 5 * 1024 * 1024
     "heading",
     [
         "Demo",
-        "Architecture",
-        "How it works",
-        "Installation",
-        "Usage",
-        "Results",
-        "Limitations",
-        "Future work",
+        "Kiến trúc",
+        "Cách hoạt động",
+        "Cài đặt",
+        "Cách dùng",
+        "Kết quả",
+        "Giới hạn",
+        "Hướng phát triển",
     ],
 )
 def test_readme_has_recruiter_facing_sections(heading: str) -> None:
@@ -59,8 +59,8 @@ def test_demo_provenance_records_source_and_derivative_limits() -> None:
 
     assert "https://commons.wikimedia.org/wiki/File:Street_traffic.webm" in provenance
     assert "CC BY 3.0" in provenance
-    assert "AI-assisted" in provenance
-    assert "not committed" in provenance
+    assert "có hỗ trợ AI" in provenance
+    assert "không commit" in provenance
 
 
 def test_repository_has_code_license_and_third_party_notices() -> None:
