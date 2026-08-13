@@ -131,6 +131,28 @@ def test_counter_prunes_stale_track_state_but_preserves_event_history() -> None:
     assert len(new_state.events) == 1
 
 
+def test_expired_track_identity_cannot_emit_a_crossing_event() -> None:
+    state, _ = _update(CounterState(), _track(8, 50.0, 30.0), 0)
+
+    new_state, events = update_counter(
+        state,
+        (_track(8, 50.0, 70.0),),
+        frame_index=31,
+        frame_size=(100, 100),
+        line_start=LINE_START,
+        line_end=LINE_END,
+        deadband=0.02,
+        minimum_track_age=3,
+        counted_classes=frozenset({"car"}),
+        negative_to_positive=CrossingDirection.IN,
+        positive_to_negative=CrossingDirection.OUT,
+        stale_after=30,
+    )
+
+    assert events == ()
+    assert new_state.events == ()
+
+
 @pytest.mark.parametrize("frame_size", [(0, 100), (100, 0)])
 def test_counter_rejects_invalid_frame_size(frame_size: tuple[int, int]) -> None:
     with pytest.raises(ValueError, match="frame"):

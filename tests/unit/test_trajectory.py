@@ -139,3 +139,21 @@ def test_stale_history_is_pruned_without_mutating_previous_state() -> None:
     assert state.histories
     assert new_state.histories == ()
     assert tracked == ()
+
+
+def test_expired_track_identity_starts_a_new_trajectory() -> None:
+    state, _ = _advance(TrajectoryState(), _observation(1, 50.0, 30.0, age=1), 0)
+
+    new_state, tracked = update_trajectories(
+        state,
+        (_observation(1, 50.0, 70.0, age=1),),
+        frame_index=31,
+        frame_size=(100, 100),
+        max_length=5,
+        direction_window=2,
+        minimum_displacement=0.01,
+        stale_after=30,
+    )
+
+    assert new_state.histories[0].points == (tracked[0].anchor,)
+    assert tracked[0].movement is MovementDirection.UNKNOWN

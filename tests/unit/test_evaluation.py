@@ -88,6 +88,14 @@ def test_event_csv_loader_validates_schema_and_rows(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="row 2"):
         load_events_csv(invalid_row)
 
+    extra_value = tmp_path / "extra-value.csv"
+    extra_value.write_text(
+        "frame_index,track_id,class_name,direction\n0,1,car,IN,ignored\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="row 2"):
+        load_events_csv(extra_value)
+
 
 def test_ground_truth_loader_uses_human_annotation_schema(tmp_path: Path) -> None:
     annotations = tmp_path / "ground-truth.csv"

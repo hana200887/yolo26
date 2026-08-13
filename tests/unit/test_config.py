@@ -54,6 +54,7 @@ def test_config_rejects_unknown_keys(tmp_path: Path) -> None:
         ("model", "inference_confidence", 0.2, "track_low_thresh"),
         ("tracking", "direction_window", 31, "trajectory_length"),
         ("counting", "deadband", -0.1, "deadband"),
+        ("counting", "counted_classes", ["person"], "vehicle classes"),
     ],
 )
 def test_config_rejects_invalid_cross_field_values(
@@ -74,7 +75,11 @@ def test_config_rejects_invalid_cross_field_values(
 
 
 def test_config_rejects_degenerate_or_out_of_bounds_line(tmp_path: Path) -> None:
-    for points in (((0.5, 0.5), (0.5, 0.5)), ((-0.1, 0.5), (0.8, 0.5))):
+    for points in (
+        ((0.5, 0.5), (0.5, 0.5)),
+        ((0.5, 0.5), (0.5000000001, 0.5)),
+        ((-0.1, 0.5), (0.8, 0.5)),
+    ):
         payload = _default_payload()
         counting = payload["counting"]
         assert isinstance(counting, dict)

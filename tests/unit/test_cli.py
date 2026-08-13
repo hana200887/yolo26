@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+import traffic_analytics.cli as cli
 from traffic_analytics.cli import build_parser, main
+from traffic_analytics.pipeline import PipelineMode
 
 
 @pytest.mark.parametrize("command", ["detect", "track", "analyze"])
@@ -96,3 +99,55 @@ def test_evaluate_command_rejects_invalid_ground_truth(
 def test_parser_rejects_unknown_mode() -> None:
     with pytest.raises(SystemExit):
         build_parser().parse_args(["serve"])
+
+
+@pytest.mark.parametrize("command", ["detect", "track", "analyze"])
+def test_video_command_dispatches_all_user_arguments(
+    command: str, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    source = Path("traffic.mp4")
+    config = SimpleNamespace(model=object(), tracking=object())
+    calls: dict[str, object] = {}
+
+    class Summary:
+        def to_dict(self) -> dict[str, str]:
+            return {"status": "ok"}
+
+    def fake_run_video(video_source: Path, **kwargs: object) -> Summary:
+        calls.update({"source": video_source, **kwargs})
+        return Summary()
+
+    monkeypatch.setattr(cli, "validate_video_source", lambda value: value)
+    monkeypatch.setattr(cli, "load_config", lambda value: config)
+    monkeypatch.setattr(cli, "UltralyticsAdapter", lambda model, tracking: object())
+    monkeypatch.setattr(cli, "run_video", fake_run_video)
+
+    exit_code = main([command, "--source", str(source), "--no-preview", "--max-frames", "7"])
+
+    assert exit_code == 0
+    assert calls["source"] == source
+    assert calls["mode"] is PipelineMode(command)
+    assert calls["config"] is config
+    assert calls["adapter"] is not None
+    assert calls["preview"] is False
+    assert calls["max_frames"] == 7
+    assert '"status": "ok"' in capsys.readouterr().out
+
+
+def test_video_command_reports_output_io_errors(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    config = SimpleNamespace(model=object(), tracking=object())
+
+    def fail_run_video(*args: object, **kwargs: object) -> None:
+        raise OSError("disk full")
+
+    monkeypatch.setattr(cli, "validate_video_source", lambda value: value)
+    monkeypatch.setattr(cli, "load_config", lambda value: config)
+    monkeypatch.setattr(cli, "UltralyticsAdapter", lambda model, tracking: object())
+    monkeypatch.setattr(cli, "run_video", fail_run_video)
+
+    exit_code = main(["analyze", "--source", "traffic.mp4"])
+
+    assert exit_code == 2
+    assert "disk full" in capsys.readouterr().err
